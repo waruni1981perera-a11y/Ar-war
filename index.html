@@ -1,422 +1,336 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, user-scalable=no">
 
-<title>AR WAR ZONE</title>
+  <title>AR WAR ZONE</title>
 
-<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 
-<style>
+  <style>
     body {
-        margin: 0;
-        overflow: hidden;
-        font-family: Arial, sans-serif;
+      margin: 0;
+      overflow: hidden;
+      font-family: Arial;
     }
 
     #start {
-        position: fixed;
-        z-index: 10;
-        inset: 0;
-        background: #080808;
-        color: white;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      background: #080808;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
     }
 
     #start h1 {
-        font-size: 42px;
-        margin-bottom: 10px;
-        letter-spacing: 4px;
-    }
-
-    #start p {
-        color: #aaa;
-        margin-bottom: 30px;
+      font-size: 42px;
+      letter-spacing: 4px;
     }
 
     #start button {
-        padding: 18px 40px;
-        border: 0;
-        border-radius: 12px;
-        background: #d71919;
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
+      background: #d71919;
+      color: white;
+      border: none;
+      padding: 18px 35px;
+      border-radius: 12px;
+      font-size: 19px;
+      font-weight: bold;
     }
 
-    #hud {
-        display: none;
-        position: fixed;
-        z-index: 5;
-        top: 20px;
-        left: 20px;
-        color: white;
-        background: rgba(0,0,0,.55);
-        padding: 12px 18px;
-        border-radius: 10px;
-        font-size: 14px;
+    #message {
+      position: fixed;
+      z-index: 10;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.7);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      text-align: center;
+      display: none;
     }
 
-    #fire {
-        display: none;
-        position: fixed;
-        z-index: 6;
-        bottom: 35px;
-        right: 25px;
-        width: 90px;
-        height: 90px;
-        border-radius: 50%;
-        border: 3px solid white;
-        background: #c00;
-        color: white;
-        font-weight: bold;
-        font-size: 16px;
+    #tap {
+      position: fixed;
+      z-index: 10;
+      bottom: 35px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #00b86b;
+      color: white;
+      border: none;
+      padding: 17px 30px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      display: none;
     }
 
     #reticle {
-        display: none;
-        position: fixed;
-        z-index: 5;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%,-50%);
-        width: 45px;
-        height: 45px;
-        border: 2px solid #00ff88;
-        border-radius: 50%;
-        pointer-events: none;
+      position: fixed;
+      z-index: 10;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+      width: 45px;
+      height: 45px;
+      border: 3px solid #00ff88;
+      border-radius: 50%;
+      display: none;
+      pointer-events: none;
     }
-</style>
+  </style>
 </head>
 
 <body>
 
 <div id="start">
-    <h1>⚔ AR WAR ZONE</h1>
-    <p>Live Battlefield Augmented Reality</p>
-    <button onclick="startAR()">ENTER BATTLEFIELD</button>
+
+  <h1>⚔ AR WAR ZONE</h1>
+
+  <p>LIVE AUGMENTED REALITY</p>
+
+  <button onclick="startAR()">
+    ENTER BATTLEFIELD
+  </button>
+
 </div>
 
-<div id="hud">
-    🔴 WAR ZONE ACTIVE<br>
-    Scan the ground and place battlefield
+<div id="message">
+  Move your phone slowly and scan the ground...
 </div>
 
 <div id="reticle"></div>
 
-<button id="fire" onclick="fireWeapon()">FIRE</button>
+<button id="tap" onclick="placeBattlefield()">
+  PLACE BATTLEFIELD
+</button>
+
 
 <a-scene
-    embedded
-    vr-mode-ui="enabled: false"
-    renderer="colorManagement: true; physicallyCorrectLights: true"
-    webxr="optionalFeatures: hit-test, dom-overlay; overlayElement: #hud">
+  id="scene"
+  embedded
+  vr-mode-ui="enabled:false"
+  renderer="colorManagement:true; physicallyCorrectLights:true"
+  webxr="requiredFeatures: hit-test; optionalFeatures: dom-overlay"
+  xr-mode-ui="enabled:true">
 
-    <!-- CAMERA -->
+  <a-camera></a-camera>
 
-    <a-camera
-        id="camera"
-        position="0 1.6 0">
-    </a-camera>
+  <a-entity
+    light="type:ambient; intensity:1.5">
+  </a-entity>
 
+  <a-entity id="world">
 
-    <!-- LIGHT -->
+    <!-- GROUND -->
 
-    <a-light
-        type="ambient"
-        intensity="1.2">
-    </a-light>
-
-    <a-light
-        type="directional"
-        intensity="2"
-        position="-3 6 2">
-    </a-light>
+    <a-plane
+      rotation="-90 0 0"
+      width="7"
+      height="7"
+      color="#30332b">
+    </a-plane>
 
 
-    <!-- BATTLEFIELD -->
+    <!-- TANK -->
 
-    <a-entity id="battlefield"
-              visible="false"
-              position="0 0 -4">
+    <a-entity id="tank"
+              position="0 0.45 -1">
 
+      <!-- BODY -->
 
-        <!-- GROUND -->
+      <a-box
+        position="0 0 0"
+        width="1.8"
+        height=".55"
+        depth="2.6"
+        color="#4b553c">
+      </a-box>
 
-        <a-box
-            position="0 -0.08 0"
-            width="8"
-            height="0.15"
-            depth="8"
-            color="#35352d">
-        </a-box>
+      <!-- TOP -->
 
+      <a-box
+        position="0 .4 0"
+        width="1.3"
+        height=".3"
+        depth="1.4"
+        color="#394331">
+      </a-box>
 
-        <!-- CRATERS -->
+      <!-- TURRET -->
 
-        <a-cylinder
-            position="-2 0.01 -1"
-            radius="0.7"
-            height="0.05"
-            color="#181815">
-        </a-cylinder>
+      <a-cylinder
+        position="0 .62 0"
+        radius=".55"
+        height=".25"
+        color="#30382a">
+      </a-cylinder>
 
-        <a-cylinder
-            position="2 0.01 1"
-            radius="0.5"
-            height="0.05"
-            color="#181815">
-        </a-cylinder>
+      <!-- CANNON -->
 
+      <a-cylinder
+        position="0 .65 -.9"
+        radius=".09"
+        height="1.7"
+        rotation="90 0 0"
+        color="#171a14">
+      </a-cylinder>
 
-        <!-- TANK -->
+      <!-- TRACKS -->
 
-        <a-entity id="tank"
-                  position="0 0.45 0">
+      <a-box
+        position="-1 -.25 0"
+        width=".3"
+        height=".6"
+        depth="2.8"
+        color="#111">
+      </a-box>
 
-            <!-- BODY -->
-
-            <a-box
-                position="0 0 0"
-                width="2"
-                height=".65"
-                depth="3"
-                color="#46523b">
-            </a-box>
-
-            <!-- TOP -->
-
-            <a-box
-                position="0 .45 0"
-                width="1.5"
-                height=".3"
-                depth="1.6"
-                color="#394531">
-            </a-box>
-
-            <!-- TURRET -->
-
-            <a-cylinder
-                position="0 .7 0"
-                radius=".65"
-                height=".3"
-                color="#303c2a">
-            </a-cylinder>
-
-            <!-- CANNON -->
-
-            <a-cylinder
-                id="cannon"
-                position="0 .72 -1.25"
-                radius=".12"
-                height="2"
-                rotation="90 0 0"
-                color="#20251c">
-            </a-cylinder>
-
-            <!-- LEFT TRACK -->
-
-            <a-box
-                position="-1.05 -.25 0"
-                width=".35"
-                height=".65"
-                depth="3.1"
-                color="#171914">
-            </a-box>
-
-            <!-- RIGHT TRACK -->
-
-            <a-box
-                position="1.05 -.25 0"
-                width=".35"
-                height=".65"
-                depth="3.1"
-                color="#171914">
-            </a-box>
-
-        </a-entity>
-
-
-        <!-- SOLDIER 1 -->
-
-        <a-entity position="-2 0 -1.5">
-
-            <a-cylinder
-                position="0 1 0"
-                radius=".22"
-                height="1.4"
-                color="#4b5940">
-            </a-cylinder>
-
-            <a-sphere
-                position="0 1.85 0"
-                radius=".23"
-                color="#6b593f">
-            </a-sphere>
-
-            <a-box
-                position="0 1.1 -.35"
-                width=".12"
-                height=".12"
-                depth=".8"
-                color="#111">
-            </a-box>
-
-        </a-entity>
-
-
-        <!-- SOLDIER 2 -->
-
-        <a-entity position="2 0 -1">
-
-            <a-cylinder
-                position="0 1 0"
-                radius=".22"
-                height="1.4"
-                color="#4b5940">
-            </a-cylinder>
-
-            <a-sphere
-                position="0 1.85 0"
-                radius=".23"
-                color="#6b593f">
-            </a-sphere>
-
-            <a-box
-                position="0 1.1 -.35"
-                width=".12"
-                height=".12"
-                depth=".8"
-                color="#111">
-            </a-box>
-
-        </a-entity>
-
-
-        <!-- SOLDIER 3 -->
-
-        <a-entity position="0 0 2">
-
-            <a-cylinder
-                position="0 1 0"
-                radius=".22"
-                height="1.4"
-                color="#4b5940">
-            </a-cylinder>
-
-            <a-sphere
-                position="0 1.85 0"
-                radius=".23"
-                color="#6b593f">
-            </a-sphere>
-
-        </a-entity>
-
-
-        <!-- DESTROYED WALL -->
-
-        <a-box
-            position="-3 .8 2"
-            width="3"
-            height="1.6"
-            depth=".3"
-            rotation="0 0 8"
-            color="#555047">
-        </a-box>
-
-
-        <!-- FIRE -->
-
-        <a-sphere
-            id="explosion"
-            visible="false"
-            position="0 .5 -2"
-            radius=".7"
-            color="#ff5a00"
-            material="shader: flat; opacity: .9">
-        </a-sphere>
+      <a-box
+        position="1 -.25 0"
+        width=".3"
+        height=".6"
+        depth="2.8"
+        color="#111">
+      </a-box>
 
     </a-entity>
+
+
+    <!-- SOLDIER 1 -->
+
+    <a-entity position="-2 0 -1">
+
+      <a-cylinder
+        position="0 .8 0"
+        radius=".2"
+        height="1.3"
+        color="#4d593f">
+      </a-cylinder>
+
+      <a-sphere
+        position="0 1.55 0"
+        radius=".22"
+        color="#806548">
+      </a-sphere>
+
+    </a-entity>
+
+
+    <!-- SOLDIER 2 -->
+
+    <a-entity position="2 0 -1">
+
+      <a-cylinder
+        position="0 .8 0"
+        radius=".2"
+        height="1.3"
+        color="#4d593f">
+      </a-cylinder>
+
+      <a-sphere
+        position="0 1.55 0"
+        radius=".22"
+        color="#806548">
+      </a-sphere>
+
+    </a-entity>
+
+
+    <!-- CRATER -->
+
+    <a-cylinder
+      position="-2 .02 1"
+      radius=".6"
+      height=".04"
+      color="#111">
+    </a-cylinder>
+
+
+    <!-- WALL -->
+
+    <a-box
+      position="2 .7 1.5"
+      width="2.5"
+      height="1.4"
+      depth=".25"
+      color="#555048">
+    </a-box>
+
+  </a-entity>
 
 </a-scene>
 
 
 <script>
 
-let battlefield;
+let scene;
 let placed = false;
 
-function startAR() {
+async function startAR() {
 
-    document.getElementById("start").style.display = "none";
+  document.getElementById("start").style.display = "none";
 
-    document.getElementById("hud").style.display = "block";
+  document.getElementById("message").style.display = "block";
 
-    document.getElementById("reticle").style.display = "block";
+  document.getElementById("reticle").style.display = "block";
 
-    document.getElementById("fire").style.display = "block";
+  scene = document.querySelector("#scene");
 
-    battlefield =
-        document.getElementById("battlefield");
+  try {
 
-    battlefield.setAttribute("visible", "true");
+    await scene.enterVR();
 
-    /*
-       First prototype:
-       battlefield appears several meters
-       in front of the camera.
-    */
+  } catch(error) {
 
-    battlefield.setAttribute(
-        "position",
-        "0 0 -4"
-    );
+    console.log(error);
+
+    document.getElementById("message").innerHTML =
+      "AR is not supported on this browser/device.";
+
+  }
 
 }
 
 
-/* FIRE */
+/* PLACE BATTLEFIELD */
 
-function fireWeapon() {
+function placeBattlefield() {
 
-    const explosion =
-        document.getElementById("explosion");
+  if (placed) return;
 
-    explosion.setAttribute(
-        "visible",
-        "true"
-    );
+  placed = true;
 
-    explosion.setAttribute(
-        "scale",
-        "0.2 0.2 0.2"
-    );
+  document.getElementById("message").innerHTML =
+    "🔥 BATTLEFIELD DEPLOYED!";
 
-    setTimeout(() => {
+  document.getElementById("tap").style.display = "none";
 
-        explosion.setAttribute(
-            "scale",
-            "1.8 1.8 1.8"
-        );
-
-    }, 80);
-
-    setTimeout(() => {
-
-        explosion.setAttribute(
-            "visible",
-            "false"
-        );
-
-    }, 450);
+  document.getElementById("reticle").style.display = "none";
 
 }
+
+
+/* Detect AR session */
+
+document.addEventListener("enter-vr", function() {
+
+  document.getElementById("message").innerHTML =
+    "SCAN THE GROUND...";
+
+  document.getElementById("tap").style.display =
+    "block";
+
+});
 
 </script>
 
