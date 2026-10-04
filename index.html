@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+<title>AR WAR ZONE</title>
+
+<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+
+<style>
+    body {
+        margin: 0;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+    }
+
+    #start {
+        position: fixed;
+        z-index: 10;
+        inset: 0;
+        background: #080808;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    #start h1 {
+        font-size: 42px;
+        margin-bottom: 10px;
+        letter-spacing: 4px;
+    }
+
+    #start p {
+        color: #aaa;
+        margin-bottom: 30px;
+    }
+
+    #start button {
+        padding: 18px 40px;
+        border: 0;
+        border-radius: 12px;
+        background: #d71919;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    #hud {
+        display: none;
+        position: fixed;
+        z-index: 5;
+        top: 20px;
+        left: 20px;
+        color: white;
+        background: rgba(0,0,0,.55);
+        padding: 12px 18px;
+        border-radius: 10px;
+        font-size: 14px;
+    }
+
+    #fire {
+        display: none;
+        position: fixed;
+        z-index: 6;
+        bottom: 35px;
+        right: 25px;
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        border: 3px solid white;
+        background: #c00;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    #reticle {
+        display: none;
+        position: fixed;
+        z-index: 5;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%,-50%);
+        width: 45px;
+        height: 45px;
+        border: 2px solid #00ff88;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+</style>
+</head>
+
+<body>
+
+<div id="start">
+    <h1>⚔ AR WAR ZONE</h1>
+    <p>Live Battlefield Augmented Reality</p>
+    <button onclick="startAR()">ENTER BATTLEFIELD</button>
+</div>
+
+<div id="hud">
+    🔴 WAR ZONE ACTIVE<br>
+    Scan the ground and place battlefield
+</div>
+
+<div id="reticle"></div>
+
+<button id="fire" onclick="fireWeapon()">FIRE</button>
+
+<a-scene
+    embedded
+    vr-mode-ui="enabled: false"
+    renderer="colorManagement: true; physicallyCorrectLights: true"
+    webxr="optionalFeatures: hit-test, dom-overlay; overlayElement: #hud">
+
+    <!-- CAMERA -->
+
+    <a-camera
+        id="camera"
+        position="0 1.6 0">
+    </a-camera>
+
+
+    <!-- LIGHT -->
+
+    <a-light
+        type="ambient"
+        intensity="1.2">
+    </a-light>
+
+    <a-light
+        type="directional"
+        intensity="2"
+        position="-3 6 2">
+    </a-light>
+
+
+    <!-- BATTLEFIELD -->
+
+    <a-entity id="battlefield"
+              visible="false"
+              position="0 0 -4">
+
+
+        <!-- GROUND -->
+
+        <a-box
+            position="0 -0.08 0"
+            width="8"
+            height="0.15"
+            depth="8"
+            color="#35352d">
+        </a-box>
+
+
+        <!-- CRATERS -->
+
+        <a-cylinder
+            position="-2 0.01 -1"
+            radius="0.7"
+            height="0.05"
+            color="#181815">
+        </a-cylinder>
+
+        <a-cylinder
+            position="2 0.01 1"
+            radius="0.5"
+            height="0.05"
+            color="#181815">
+        </a-cylinder>
+
+
+        <!-- TANK -->
+
+        <a-entity id="tank"
+                  position="0 0.45 0">
+
+            <!-- BODY -->
+
+            <a-box
+                position="0 0 0"
+                width="2"
+                height=".65"
+                depth="3"
+                color="#46523b">
+            </a-box>
+
+            <!-- TOP -->
+
+            <a-box
+                position="0 .45 0"
+                width="1.5"
+                height=".3"
+                depth="1.6"
+                color="#394531">
+            </a-box>
+
+            <!-- TURRET -->
+
+            <a-cylinder
+                position="0 .7 0"
+                radius=".65"
+                height=".3"
+                color="#303c2a">
+            </a-cylinder>
+
+            <!-- CANNON -->
+
+            <a-cylinder
+                id="cannon"
+                position="0 .72 -1.25"
+                radius=".12"
+                height="2"
+                rotation="90 0 0"
+                color="#20251c">
+            </a-cylinder>
+
+            <!-- LEFT TRACK -->
+
+            <a-box
+                position="-1.05 -.25 0"
+                width=".35"
+                height=".65"
+                depth="3.1"
+                color="#171914">
+            </a-box>
+
+            <!-- RIGHT TRACK -->
+
+            <a-box
+                position="1.05 -.25 0"
+                width=".35"
+                height=".65"
+                depth="3.1"
+                color="#171914">
+            </a-box>
+
+        </a-entity>
+
+
+        <!-- SOLDIER 1 -->
+
+        <a-entity position="-2 0 -1.5">
+
+            <a-cylinder
+                position="0 1 0"
+                radius=".22"
+                height="1.4"
+                color="#4b5940">
+            </a-cylinder>
+
+            <a-sphere
+                position="0 1.85 0"
+                radius=".23"
+                color="#6b593f">
+            </a-sphere>
+
+            <a-box
+                position="0 1.1 -.35"
+                width=".12"
+                height=".12"
+                depth=".8"
+                color="#111">
+            </a-box>
+
+        </a-entity>
+
+
+        <!-- SOLDIER 2 -->
+
+        <a-entity position="2 0 -1">
+
+            <a-cylinder
+                position="0 1 0"
+                radius=".22"
+                height="1.4"
+                color="#4b5940">
+            </a-cylinder>
+
+            <a-sphere
+                position="0 1.85 0"
+                radius=".23"
+                color="#6b593f">
+            </a-sphere>
+
+            <a-box
+                position="0 1.1 -.35"
+                width=".12"
+                height=".12"
+                depth=".8"
+                color="#111">
+            </a-box>
+
+        </a-entity>
+
+
+        <!-- SOLDIER 3 -->
+
+        <a-entity position="0 0 2">
+
+            <a-cylinder
+                position="0 1 0"
+                radius=".22"
+                height="1.4"
+                color="#4b5940">
+            </a-cylinder>
+
+            <a-sphere
+                position="0 1.85 0"
+                radius=".23"
+                color="#6b593f">
+            </a-sphere>
+
+        </a-entity>
+
+
+        <!-- DESTROYED WALL -->
+
+        <a-box
+            position="-3 .8 2"
+            width="3"
+            height="1.6"
+            depth=".3"
+            rotation="0 0 8"
+            color="#555047">
+        </a-box>
+
+
+        <!-- FIRE -->
+
+        <a-sphere
+            id="explosion"
+            visible="false"
+            position="0 .5 -2"
+            radius=".7"
+            color="#ff5a00"
+            material="shader: flat; opacity: .9">
+        </a-sphere>
+
+    </a-entity>
+
+</a-scene>
+
+
+<script>
+
+let battlefield;
+let placed = false;
+
+function startAR() {
+
+    document.getElementById("start").style.display = "none";
+
+    document.getElementById("hud").style.display = "block";
+
+    document.getElementById("reticle").style.display = "block";
+
+    document.getElementById("fire").style.display = "block";
+
+    battlefield =
+        document.getElementById("battlefield");
+
+    battlefield.setAttribute("visible", "true");
+
+    /*
+       First prototype:
+       battlefield appears several meters
+       in front of the camera.
+    */
+
+    battlefield.setAttribute(
+        "position",
+        "0 0 -4"
+    );
+
+}
+
+
+/* FIRE */
+
+function fireWeapon() {
+
+    const explosion =
+        document.getElementById("explosion");
+
+    explosion.setAttribute(
+        "visible",
+        "true"
+    );
+
+    explosion.setAttribute(
+        "scale",
+        "0.2 0.2 0.2"
+    );
+
+    setTimeout(() => {
+
+        explosion.setAttribute(
+            "scale",
+            "1.8 1.8 1.8"
+        );
+
+    }, 80);
+
+    setTimeout(() => {
+
+        explosion.setAttribute(
+            "visible",
+            "false"
+        );
+
+    }, 450);
+
+}
+
+</script>
+
+</body>
+</html>
